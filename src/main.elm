@@ -104,6 +104,42 @@ defaultModel =
     , fps = 0
     }
 
+newStar : (Float, Float) -> Float  -> Star
+newStar (newX, newY) newZ =
+    { defaultStar | x = newX, y = newY, z = newZ }
+
+addStars : Bool -> List Star -> Seed -> (List Star, Seed)
+addStars initRandomDepth stars seed =
+    if (starCount - List.length stars) == 0 then
+        (stars, seed)
+    else
+        let
+            (star, newSeed) = (generateStar initRandomDepth bounds.minX bounds.minY bounds.maxDepth seed)
+        in
+            addStars initRandomDepth (star :: stars) newSeed
+
+
+
+generateStar : Bool -> Float -> Float -> Float -> Seed -> (Star, Seed)
+generateStar initRandomDepth minX minY maxZ seed =
+        case initRandomDepth of
+          True ->
+            let
+              newz = Random.float 0 bounds.maxDepth
+              (randomz, newSeed) = Random.step newz seed
+              pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
+              (coords, newSeed2) = Random.step pair newSeed
+            in
+              (newStar coords randomz, newSeed2)
+          False ->
+            let
+              pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
+              (coords, newSeed2) = Random.step pair seed
+            in
+              (newStar coords bounds.maxDepth, newSeed2)
+
+
+
 
 -------- Messages -------------------------
 type Msg
@@ -128,8 +164,8 @@ update msg model =
                 Tick dt ->
                     let
                         movedStars = List.map (moveStar (velocity * dt ) ) model.stars
-                        insideField = List.filter filterInside movedStars
-                        (updatedStars, updatedSeed) = addStars False insideField model.seed
+                        visibleStars = List.filter filterVisibleStars movedStars
+                        (updatedStars, updatedSeed) = addStars False visibleStars model.seed
                         model' =  { model |
                                 stars = updatedStars,
                                 seed = updatedSeed,
@@ -140,40 +176,6 @@ update msg model =
     in
         ( newModel, cmds )
 
-newStar : (Float, Float) -> Float  -> Star
-newStar (newX, newY) newZ =
-    { defaultStar | x = newX, y = newY, z = newZ }
-
-addStars : Bool -> List Star -> Seed -> (List Star, Seed)
-addStars initAllStars stars seed =
-    if (starCount - List.length stars) == 0 then
-        (stars, seed)
-    else
-        let
-            (star, newSeed) = (generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed)
-        in
-            addStars initAllStars (star :: stars) newSeed
-
-
-
-generateStar : Bool -> Float -> Float -> Float -> Seed -> (Star, Seed)
-generateStar initAllStars minX minY maxZ seed =
-        case initAllStars of
-          True ->
-            let
-              newz = Random.float 0 bounds.maxDepth
-              (randomz, newSeed) = Random.step newz seed
-              pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
-              (coords, newSeed2) = Random.step pair newSeed
-            in
-              (newStar coords randomz, newSeed2)
-          False ->
-            let
-              pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
-              (coords, newSeed2) = Random.step pair seed
-            in
-              (newStar coords bounds.maxDepth, newSeed2)
-
 
 moveStar : Float -> Star -> Star
 moveStar velocity star =
@@ -182,9 +184,9 @@ moveStar velocity star =
     }
 
 
-filterInside : Star -> Bool
-filterInside star =
-    abs star.x < bounds.maxX && abs star.y < bounds.maxX && star.z > bounds.minDepth
+filterVisibleStars : Star -> Bool
+filterVisibleStars star =
+    abs star.x < bounds.maxX && abs star.y < bounds.maxX && star.z < bounds.minDepth
 
 
 -------- View -------------------------
