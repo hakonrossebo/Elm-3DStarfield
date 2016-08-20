@@ -42,11 +42,24 @@ subscriptions model =
 
 
 -------- Model -------------------------
-velocity : Float
-velocity = 0.006
+type alias Velocity =
+    {
+      x : Float
+    , y : Float
+    , z : Float
+    }
+
+velocity: Velocity
+velocity =
+    {
+      x = 0.000
+    , y = 0.0
+    , z = 0.019
+    }
+
 
 perspective : Float
-perspective = 512
+perspective = 256
 
 
 
@@ -64,12 +77,12 @@ type alias Bounds =
 
 bounds: Bounds
 bounds =
-    { minX = 30
-    , minY = 20
-    , maxX = 300
-    , maxY = 300
-    , minDepth = 0
-    , maxDepth = 32
+    { minX = 45
+    , minY = 40
+    , maxX = 59
+    , maxY = 59
+    , minDepth = 1
+    , maxDepth = 40
     }
 
 type alias Star =
@@ -109,23 +122,23 @@ newStar (newX, newY) newZ =
     { defaultStar | x = newX, y = newY, z = newZ }
 
 addStars : Bool -> List Star -> Seed -> (List Star, Seed)
-addStars initRandomDepth stars seed =
+addStars initAllStars stars seed =
     if (starCount - List.length stars) == 0 then
         (stars, seed)
     else
         let
-            (star, newSeed) = (generateStar initRandomDepth bounds.minX bounds.minY bounds.maxDepth seed)
+            (star, newSeed) = (generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed)
         in
-            addStars initRandomDepth (star :: stars) newSeed
+            addStars initAllStars (star :: stars) newSeed
 
 
 
 generateStar : Bool -> Float -> Float -> Float -> Seed -> (Star, Seed)
-generateStar initRandomDepth minX minY maxZ seed =
-        case initRandomDepth of
+generateStar initAllStars minX minY maxZ seed =
+        case initAllStars of
           True ->
             let
-              newz = Random.float 0 bounds.maxDepth
+              newz = Random.float (bounds.minDepth + 1) bounds.maxDepth
               (randomz, newSeed) = Random.step newz seed
               pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
               (coords, newSeed2) = Random.step pair newSeed
@@ -133,11 +146,17 @@ generateStar initRandomDepth minX minY maxZ seed =
               (newStar coords randomz, newSeed2)
           False ->
             let
-              pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
+              yShift = velocity.y * 2000
+              lowY = -minX + yShift
+              upperY = minY + yShift
+              xShift = velocity.x * 2000
+              lowX = -minX + xShift
+              upperX = minX + xShift
+              pair = Random.pair (Random.float lowX upperX) (Random.float lowY upperY)
+              -- pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
               (coords, newSeed2) = Random.step pair seed
             in
               (newStar coords bounds.maxDepth, newSeed2)
-
 
 
 
@@ -163,7 +182,7 @@ update msg model =
 
                 Tick dt ->
                     let
-                        movedStars = List.map (moveStar (velocity * dt ) ) model.stars
+                        movedStars = List.map (moveStar velocity dt ) model.stars
                         visibleStars = List.filter filterVisibleStars movedStars
                         (updatedStars, updatedSeed) = addStars False visibleStars model.seed
                         model' =  { model |
@@ -177,17 +196,24 @@ update msg model =
         ( newModel, cmds )
 
 
-moveStar : Float -> Star -> Star
-moveStar velocity star =
+moveStar : Velocity -> Float -> Star -> Star
+moveStar velocity dt star =
+    let
+      xVelocity = dt * velocity.x
+      yVelocity = dt * velocity.y
+      zVelocity = dt * velocity.z
+    in
     { star |
-        z = star.z - velocity
+        x = star.x - xVelocity
+        ,y = star.y - yVelocity
+        ,z = star.z - zVelocity
     }
 
 
 filterVisibleStars : Star -> Bool
 filterVisibleStars star =
-    abs star.x < bounds.maxX && abs star.y < bounds.maxX && star.z < bounds.minDepth
-
+    -- abs star.z >= bounds.minDepth
+    abs star.x < bounds.maxX && abs star.y < bounds.maxX && abs star.z > bounds.minDepth
 
 -------- View -------------------------
 view : Model -> Html Msg
