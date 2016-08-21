@@ -53,8 +53,8 @@ velocity: Velocity
 velocity =
     {
       x = 0.00
-    , y = 0.00
-    , z = 0.019
+    , y = 0
+    , z = 10
     }
 
 
@@ -146,14 +146,13 @@ generateStar initAllStars minX minY maxZ seed =
               (newStar coords randomz, newSeed2)
           False ->
             let
-              yShift = velocity.y * 2000
+              yShift = velocity.y * 10
               lowY = -minX + yShift
               upperY = minY + yShift
-              xShift = velocity.x * 2000
+              xShift = velocity.x * 10
               lowX = -minX + xShift
               upperX = minX + xShift
               pair = Random.pair (Random.float lowX upperX) (Random.float lowY upperY)
-              -- pair = Random.pair (Random.float -minX minX) (Random.float -minY minY)
               (coords, newSeed2) = Random.step pair seed
             in
               (newStar coords bounds.maxDepth, newSeed2)
@@ -205,9 +204,9 @@ updateStep model dt=
 moveStar : Velocity -> Float -> Star -> Star
 moveStar velocity dt star =
     let
-      xVelocity = dt * velocity.x
-      yVelocity = dt * velocity.y
-      zVelocity = dt * velocity.z
+      xVelocity = (dt * velocity.x) / 1000
+      yVelocity = (dt * velocity.y) / 1000
+      zVelocity = (dt * velocity.z) / 1000
     in
     { star |
         x = star.x - xVelocity
@@ -218,7 +217,6 @@ moveStar velocity dt star =
 
 filterVisibleStars : Star -> Bool
 filterVisibleStars star =
-    -- abs star.z >= bounds.minDepth
     abs star.x < bounds.maxX && abs star.y < bounds.maxX && abs star.z > bounds.minDepth
 
 -------- View -------------------------
@@ -254,6 +252,8 @@ drawStars model =
 
     in
         model.stars
+        |>  List.sortBy (\star -> star.z)
+        |>  List.reverse
         |>  List.map calculate2DPoint
         |>  List.map (drawStar windowCenterWidth windowCenterHeight)
 
