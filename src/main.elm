@@ -181,21 +181,25 @@ update msg model =
                     ( { model | windowDimensions = newSize }, Cmd.none )
 
                 Tick dt ->
-                    let
-                      (updatedStars, updatedSeed) =
-                      model.stars
-                        |> List.map (moveStar velocity dt )
-                        |> List.filter filterVisibleStars
-                        |> addStars False model.seed
-                      model' =  { model |
-                              stars = updatedStars,
-                              seed = updatedSeed,
-                              fps = 1000/dt |> round
-                          }
-                    in
-                        (model', Cmd.none)
+                  updateStep model dt
     in
         ( newModel, cmds )
+
+
+updateStep : Model -> Time.Time -> ( Model, Cmd Msg)
+updateStep model dt=
+    let
+      (updatedStars, updatedSeed) =
+      model.stars
+        |> List.map (moveStar velocity dt )
+        |> List.filter filterVisibleStars
+        |> addStars False model.seed
+    in
+      ({ model |
+              stars = updatedStars,
+              seed = updatedSeed,
+              fps = 1000/dt |> round
+          }, Cmd.none)
 
 
 moveStar : Velocity -> Float -> Star -> Star
