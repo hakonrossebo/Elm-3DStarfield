@@ -52,8 +52,8 @@ type alias Velocity =
 velocity: Velocity
 velocity =
     {
-      x = 0.000
-    , y = 0.0
+      x = 0.00
+    , y = 0.00
     , z = 0.019
     }
 
@@ -109,7 +109,7 @@ type alias Model =
 defaultModel : Model
 defaultModel =
     let
-      (newStars, newSeed) = addStars True []  (initialSeed 1234)
+      (newStars, newSeed) = addStars True (initialSeed 1234) []
     in
     { stars = newStars
     , seed = newSeed
@@ -121,15 +121,15 @@ newStar : (Float, Float) -> Float  -> Star
 newStar (newX, newY) newZ =
     { defaultStar | x = newX, y = newY, z = newZ }
 
-addStars : Bool -> List Star -> Seed -> (List Star, Seed)
-addStars initAllStars stars seed =
+addStars : Bool -> Seed -> List Star -> (List Star, Seed)
+addStars initAllStars seed stars =
     if (starCount - List.length stars) == 0 then
         (stars, seed)
     else
         let
             (star, newSeed) = (generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed)
         in
-            addStars initAllStars (star :: stars) newSeed
+            addStars initAllStars newSeed (star :: stars)
 
 
 
@@ -182,14 +182,16 @@ update msg model =
 
                 Tick dt ->
                     let
-                        movedStars = List.map (moveStar velocity dt ) model.stars
-                        visibleStars = List.filter filterVisibleStars movedStars
-                        (updatedStars, updatedSeed) = addStars False visibleStars model.seed
-                        model' =  { model |
-                                stars = updatedStars,
-                                seed = updatedSeed,
-                                fps = 1000/dt |> round
-                            }
+                      (updatedStars, updatedSeed) =
+                      model.stars
+                        |> List.map (moveStar velocity dt )
+                        |> List.filter filterVisibleStars
+                        |> addStars False model.seed
+                      model' =  { model |
+                              stars = updatedStars,
+                              seed = updatedSeed,
+                              fps = 1000/dt |> round
+                          }
                     in
                         (model', Cmd.none)
     in
