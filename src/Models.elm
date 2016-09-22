@@ -39,12 +39,12 @@ type alias Bounds =
 
 bounds: Bounds
 bounds =
-    { minX = 45
-    , minY = 40
-    , maxX = 59
-    , maxY = 59
+    { minX = 13
+    , minY = 12
+    , maxX = 20
+    , maxY = 13
     , minDepth = 1
-    , maxDepth = 40
+    , maxDepth = 60
     }
 
 type alias Star =

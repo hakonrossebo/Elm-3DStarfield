@@ -4,7 +4,7 @@ import Models exposing (..)
 import Subscriptions exposing (..)
 import Messages exposing (..)
 import Commands exposing (..)
-import View exposing (..)
+import WebGLView exposing (..)
 import Updates exposing (..)
 
 main : Program Never
@@ -13,7 +13,7 @@ main =
         { init = initModelAndCommands
         , update = update
         , subscriptions = subscriptions
-        , view = View.view
+        , view = WebGLView.view
         }
 
 initModelAndCommands : ( Model, Cmd Msg )
