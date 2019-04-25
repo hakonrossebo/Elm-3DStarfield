@@ -1,8 +1,7 @@
-module Models exposing (..)
+module Models exposing (Bounds, Model, Star, Velocity, addStars, bounds, defaultModel, defaultStar, generateStar, newStar, perspective, starCount, velocity)
 
 import Color exposing (..)
 import Random exposing (..)
-import Window
 
 
 type alias Velocity =
@@ -69,8 +68,9 @@ defaultStar =
 type alias Model =
     { stars : List Star
     , seed : Seed
-    , windowDimensions : Window.Size
+    , windowDimensions : { width : Float, height : Float }
     , fps : Int
+    , error : Maybe String
     }
 
 
@@ -80,11 +80,12 @@ defaultModel =
         ( newStars, newSeed ) =
             addStars True (initialSeed 1234) []
     in
-        { stars = newStars
-        , seed = newSeed
-        , windowDimensions = { width = 640, height = 480 }
-        , fps = 0
-        }
+    { stars = newStars
+    , seed = newSeed
+    , windowDimensions = { width = 640, height = 480 }
+    , fps = 0
+    , error = Nothing
+    }
 
 
 newStar : ( Float, Float ) -> Float -> Star
@@ -96,12 +97,13 @@ addStars : Bool -> Seed -> List Star -> ( List Star, Seed )
 addStars initAllStars seed stars =
     if (starCount - List.length stars) == 0 then
         ( stars, seed )
+
     else
         let
             ( star, newSeed ) =
-                (generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed)
+                generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed
         in
-            addStars initAllStars newSeed (star :: stars)
+        addStars initAllStars newSeed (star :: stars)
 
 
 generateStar : Bool -> Float -> Float -> Float -> Seed -> ( Star, Seed )
@@ -121,7 +123,7 @@ generateStar initAllStars minX minY maxZ seed =
                 ( coords, newSeed2 ) =
                     Random.step pair newSeed
             in
-                ( newStar coords randomz, newSeed2 )
+            ( newStar coords randomz, newSeed2 )
 
         False ->
             let
@@ -149,4 +151,4 @@ generateStar initAllStars minX minY maxZ seed =
                 ( coords, newSeed2 ) =
                     Random.step pair seed
             in
-                ( newStar coords bounds.maxDepth, newSeed2 )
+            ( newStar coords bounds.maxDepth, newSeed2 )

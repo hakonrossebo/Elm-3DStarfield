@@ -1,10 +1,11 @@
-module Messages exposing (..)
+module Messages exposing (Msg(..))
 
-import Window exposing (..)
-import Time exposing (..)
+import Browser.Dom as Dom
 
 
 type Msg
     = NoOp
-    | WindowSize Window.Size
-    | Tick Time.Time
+    | WindowSize Dom.Viewport
+    | OnError String
+    | Tick Float
+    | OnWindowResize Int Int

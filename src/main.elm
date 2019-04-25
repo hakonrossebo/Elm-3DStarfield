@@ -1,24 +1,30 @@
-module Main exposing (..)
+module Main exposing (initModelAndCommands, main)
 
+import Browser
+import Commands exposing (..)
 import Html
+import Messages exposing (..)
 import Models exposing (..)
 import Subscriptions exposing (..)
-import Messages exposing (..)
-import Commands exposing (..)
-import View exposing (..)
 import Updates exposing (..)
+import View exposing (..)
 
 
-main : Program Never Model Msg
+type alias Flags = ()
+    -- { api : String
+    -- }
+
+
+main : Program Flags Model Msg
 main =
-    Html.program
+    Browser.element
         { init = initModelAndCommands
+        , view = View.view
         , update = update
         , subscriptions = subscriptions
-        , view = View.view
         }
 
 
-initModelAndCommands : ( Model, Cmd Msg )
-initModelAndCommands =
+initModelAndCommands : Flags -> ( Model, Cmd Msg )
+initModelAndCommands flags =
     ( defaultModel, getWindowSizeCommand )

@@ -1,14 +1,13 @@
-module Subscriptions exposing (..)
+module Subscriptions exposing (subscriptions)
 
-import AnimationFrame
-import Window
-import Models exposing (..)
+import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
 import Messages exposing (..)
+import Models exposing (..)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ AnimationFrame.diffs Tick
-        , Window.resizes WindowSize
+        [ onAnimationFrameDelta Tick
+        , onResize OnWindowResize
         ]

@@ -1,8 +1,8 @@
-module Updates exposing (..)
+module Updates exposing (filterVisibleStars, moveStar, update, updateStep)
 
-import Time exposing (..)
-import Models exposing (..)
+import Commands exposing (..)
 import Messages exposing (..)
+import Models exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -13,16 +13,24 @@ update msg model =
                 NoOp ->
                     ( model, Cmd.none )
 
-                WindowSize newSize ->
-                    ( { model | windowDimensions = newSize }, Cmd.none )
+                WindowSize element ->
+                    ( { model | windowDimensions = { width = element.viewport.width, height = element.viewport.height } }, Cmd.none )
 
                 Tick dt ->
                     updateStep model dt
+
+                -- OnSketchDrawingAreaFound element ->
+                --     ( { model | sketchDrawingArea = Just element }, Cmd.none )
+                OnError error ->
+                    ( { model | error = Just error }, Cmd.none )
+
+                OnWindowResize x y ->
+                    ( model, getWindowSizeCommand )
     in
-        ( newModel, cmds )
+    ( newModel, cmds )
 
 
-updateStep : Model -> Time.Time -> ( Model, Cmd Msg )
+updateStep : Model -> Float -> ( Model, Cmd Msg )
 updateStep model dt =
     let
         ( updatedStars, updatedSeed ) =
@@ -31,13 +39,13 @@ updateStep model dt =
                 |> List.filter filterVisibleStars
                 |> addStars False model.seed
     in
-        ( { model
-            | stars = updatedStars
-            , seed = updatedSeed
-            , fps = 1000 / dt |> round
-          }
-        , Cmd.none
-        )
+    ( { model
+        | stars = updatedStars
+        , seed = updatedSeed
+        , fps = 1000 / dt |> round
+      }
+    , Cmd.none
+    )
 
 
 moveStar : Velocity -> Float -> Star -> Star
@@ -52,11 +60,11 @@ moveStar velocity dt star =
         zVelocity =
             (dt * velocity.z) / 1000
     in
-        { star
-            | x = star.x - xVelocity
-            , y = star.y - yVelocity
-            , z = star.z - zVelocity
-        }
+    { star
+        | x = star.x - xVelocity
+        , y = star.y - yVelocity
+        , z = star.z - zVelocity
+    }
 
 
 filterVisibleStars : Star -> Bool
