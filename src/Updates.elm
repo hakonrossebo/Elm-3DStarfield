@@ -1,5 +1,6 @@
 module Updates exposing (filterVisibleStars, moveStar, update, updateStep)
 
+import Browser.Events exposing (Visibility(..))
 import Commands exposing (..)
 import Messages exposing (..)
 import Models exposing (..)
@@ -26,6 +27,9 @@ update msg model =
 
                 OnWindowResize x y ->
                     ( model, getWindowSizeCommand )
+
+                OnVisibilityChange visibility ->
+                    ( { model | visibility = visibility }, Cmd.none )
     in
     ( newModel, cmds )
 
@@ -38,12 +42,20 @@ updateStep model dt =
                 |> List.map (moveStar velocity dt)
                 |> List.filter filterVisibleStars
                 |> addStars False model.seed
+
+        newModel =
+            case model.visibility of
+                Visible ->
+                    { model
+                        | stars = updatedStars
+                        , seed = updatedSeed
+                        , fps = 1000 / dt |> round
+                    }
+
+                Hidden ->
+                    model
     in
-    ( { model
-        | stars = updatedStars
-        , seed = updatedSeed
-        , fps = 1000 / dt |> round
-      }
+    ( newModel
     , Cmd.none
     )
 

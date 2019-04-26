@@ -1,5 +1,6 @@
 module Models exposing (Bounds, Model, Star, Velocity, addStars, bounds, defaultModel, defaultStar, generateStar, newStar, perspective, starCount, velocity)
 
+import Browser.Events exposing (Visibility(..))
 import Color exposing (..)
 import Random exposing (..)
 
@@ -71,6 +72,7 @@ type alias Model =
     , windowDimensions : { width : Float, height : Float }
     , fps : Int
     , error : Maybe String
+    , visibility : Visibility
     }
 
 
@@ -85,6 +87,7 @@ defaultModel =
     , windowDimensions = { width = 640, height = 480 }
     , fps = 0
     , error = Nothing
+    , visibility = Visible
     }
 
 

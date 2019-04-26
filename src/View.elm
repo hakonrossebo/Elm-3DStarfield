@@ -1,4 +1,4 @@
-module View exposing (background, calculate2DPoint, drawStar, drawStars, infoText, view)
+module View exposing (calculate2DPoint, drawStar, drawStars, infoText, view)
 
 import Color exposing (..)
 import Color.Convert exposing (..)
@@ -19,12 +19,9 @@ view model =
         windowWidth =
             String.fromFloat model.windowDimensions.width
     in
-    div [ Html.Attributes.style "background-color" "black" ]
-        [ svg [ id "drawing-area", viewBox ("0 0 " ++ windowWidth ++ " " ++ windowHeight) ]
-            -- [ background model windowWidth windowHeight
-            [ g [] (drawStars model)
-            , infoText model windowWidth windowHeight
-            ]
+    svg [ viewBox ("0 0 " ++ windowWidth ++ " " ++ windowHeight) ]
+        [ g [] (drawStars model)
+        , infoText model windowWidth windowHeight
         ]
 
 
@@ -63,10 +60,8 @@ drawStar centerX centerY ( x, y, z ) =
             (1.2 - z / bounds.maxDepth) * 4
 
         shade =
-            1.0
-            -- (1 - z / bounds.maxDepth) * 255
+            1 - z / bounds.maxDepth
 
-        -- (1 - z / bounds.maxDepth) * 255
         shadeColor =
             rgb shade shade shade
     in
@@ -90,15 +85,4 @@ calculate2DPoint { x, y, z } =
 
 infoText : Model -> String -> String -> Svg.Svg Msg
 infoText model windowWidth windowHeight =
-    -- Svg.text_ [ x "10", y "20", fill "#ffffff", fontSize "22", fontFamily "monospace" ] [ Svg.text ("Fps: " ++ (model.fps |> toString)) ]
     Svg.text_ [ x "10", y "20", fill "#ffffff", fontSize "22", fontFamily "monospace" ] [ Svg.text ("Fps: " ++ (model.fps |> String.fromInt)) ]
-
-
-background : Model -> String -> String -> Svg.Svg Msg
-background model windowWidth windowHeight =
-    Svg.rect
-        [ width <| windowWidth
-        , height <| windowHeight
-        , fill "black"
-        ]
-        []
