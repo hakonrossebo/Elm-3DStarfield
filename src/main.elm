@@ -33,12 +33,12 @@ type alias Bounds =
 
 bounds : Bounds
 bounds =
-    { minX = 45
-    , minY = 40
-    , maxX = 59
-    , maxY = 59
+    { minX = -45
+    , minY = -35
+    , maxX = 45
+    , maxY = 35
     , minDepth = 1
-    , maxDepth = 40
+    , maxDepth = 32
     }
 
 
@@ -54,7 +54,7 @@ type alias Star =
 
 defaultStar : Star
 defaultStar =
-    { x = -25, y = -25, z = bounds.maxDepth, px = 0, py = 0, color = Color.white }
+    { x = 0, y = 0, z = bounds.maxDepth, px = 0, py = 0, color = Color.white }
 
 
 type alias Model =
@@ -132,24 +132,24 @@ addStars initAllStars seed stars =
     else
         let
             ( star, newSeed ) =
-                generateStar initAllStars bounds.minX bounds.minY bounds.maxDepth seed
+                generateStar initAllStars seed
         in
         addStars initAllStars newSeed (star :: stars)
 
 
-generateStar : Bool -> Float -> Float -> Float -> Seed -> ( Star, Seed )
-generateStar initAllStars minX minY maxZ seed =
+generateStar : Bool -> Seed -> ( Star, Seed )
+generateStar initAllStars seed =
     case initAllStars of
         True ->
             let
                 newz =
-                    Random.float (bounds.minDepth + 1) bounds.maxDepth
+                    Random.float bounds.minDepth bounds.maxDepth
 
                 ( randomz, newSeed ) =
                     Random.step newz seed
 
                 pair =
-                    Random.pair (Random.float -minX minX) (Random.float -minY minY)
+                    Random.pair (Random.float bounds.minX bounds.maxX) (Random.float bounds.minY bounds.maxY)
 
                 ( coords, newSeed2 ) =
                     Random.step pair newSeed
@@ -159,7 +159,7 @@ generateStar initAllStars minX minY maxZ seed =
         False ->
             let
                 pair =
-                    Random.pair (Random.float -minX minX) (Random.float -minY minY)
+                    Random.pair (Random.float bounds.minX bounds.maxX) (Random.float bounds.minY bounds.maxY)
 
                 ( coords, newSeed2 ) =
                     Random.step pair seed
@@ -188,7 +188,16 @@ update msg model =
                     ( model, getWindowSizeCommand )
 
                 OnVisibilityChange visibility ->
-                    ( { model | visibility = visibility }, Cmd.none )
+                    let
+                        zVelocity =
+                            case visibility of
+                                Visible ->
+                                    10
+
+                                Hidden ->
+                                    0
+                    in
+                    ( { model | visibility = visibility, zVelocity = zVelocity }, Cmd.none )
     in
     ( newModel, cmds )
 
@@ -232,7 +241,7 @@ moveStar velocity dt star =
 
 filterVisibleStars : Star -> Bool
 filterVisibleStars star =
-    abs star.x < bounds.maxX && abs star.y < bounds.maxX && abs star.z > bounds.minDepth
+    abs star.x < bounds.maxX && abs star.y < bounds.maxY && star.z >= bounds.minDepth && star.z <= bounds.maxDepth
 
 
 view : Model -> Html Msg
