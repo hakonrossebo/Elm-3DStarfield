@@ -4,7 +4,6 @@ import Browser
 import Browser.Dom as Dom
 import Browser.Events exposing (Visibility(..), onAnimationFrameDelta, onKeyDown, onMouseMove, onResize, onVisibilityChange)
 import Color exposing (..)
-import Color.Convert exposing (..)
 import Html exposing (Attribute, Html, div, input, text)
 import Html.Attributes
 import Random exposing (..)
@@ -127,7 +126,7 @@ starCount =
 
 addStars : Bool -> Seed -> List Star -> ( List Star, Seed )
 addStars initAllStars seed stars =
-    if (starCount - List.length stars) == 0 then
+    if (starCount - List.length stars) <= 0 then
         ( stars, seed )
 
     else
@@ -291,7 +290,7 @@ drawStar centerX centerY ( x, y, z ) =
         shadeColor =
             rgb shade shade shade
     in
-    circle [ cx x_, cy y_, r (String.fromFloat size), fill (colorToHex shadeColor) ] []
+    circle [ cx x_, cy y_, r (String.fromFloat size), fill (Color.toCssString shadeColor) ] []
 
 
 calculate2DPoint : Star -> ( Float, Float, Float )
