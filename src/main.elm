@@ -10,9 +10,8 @@ import Updates exposing (..)
 import View exposing (..)
 
 
-type alias Flags = ()
-    -- { api : String
-    -- }
+type alias Flags =
+    ()
 
 
 main : Program Flags Model Msg

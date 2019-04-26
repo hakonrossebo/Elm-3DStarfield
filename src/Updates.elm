@@ -20,8 +20,6 @@ update msg model =
                 Tick dt ->
                     updateStep model dt
 
-                -- OnSketchDrawingAreaFound element ->
-                --     ( { model | sketchDrawingArea = Just element }, Cmd.none )
                 OnError error ->
                     ( { model | error = Just error }, Cmd.none )
 
@@ -39,7 +37,7 @@ updateStep model dt =
     let
         ( updatedStars, updatedSeed ) =
             model.stars
-                |> List.map (moveStar velocity dt)
+                |> List.map (moveStar model.zVelocity dt)
                 |> List.filter filterVisibleStars
                 |> addStars False model.seed
 
@@ -60,22 +58,14 @@ updateStep model dt =
     )
 
 
-moveStar : Velocity -> Float -> Star -> Star
+moveStar : Float -> Float -> Star -> Star
 moveStar velocity dt star =
     let
-        xVelocity =
-            (dt * velocity.x) / 1000
-
-        yVelocity =
-            (dt * velocity.y) / 1000
-
         zVelocity =
-            (dt * velocity.z) / 1000
+            (dt * velocity) / 1000
     in
     { star
-        | x = star.x - xVelocity
-        , y = star.y - yVelocity
-        , z = star.z - zVelocity
+        | z = star.z - zVelocity
     }
 
 

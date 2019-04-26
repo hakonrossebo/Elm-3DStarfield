@@ -5,21 +5,6 @@ import Color exposing (..)
 import Random exposing (..)
 
 
-type alias Velocity =
-    { x : Float
-    , y : Float
-    , z : Float
-    }
-
-
-velocity : Velocity
-velocity =
-    { x = 0.0
-    , y = 0
-    , z = 10
-    }
-
-
 perspective : Float
 perspective =
     256
@@ -71,6 +56,7 @@ type alias Model =
     , seed : Seed
     , windowDimensions : { width : Float, height : Float }
     , fps : Int
+    , zVelocity : Float
     , error : Maybe String
     , visibility : Visibility
     }
@@ -86,6 +72,7 @@ defaultModel =
     , seed = newSeed
     , windowDimensions = { width = 640, height = 480 }
     , fps = 0
+    , zVelocity = 10
     , error = Nothing
     , visibility = Visible
     }
@@ -130,26 +117,8 @@ generateStar initAllStars minX minY maxZ seed =
 
         False ->
             let
-                yShift =
-                    velocity.y * 10
-
-                lowY =
-                    -minX + yShift
-
-                upperY =
-                    minY + yShift
-
-                xShift =
-                    velocity.x * 10
-
-                lowX =
-                    -minX + xShift
-
-                upperX =
-                    minX + xShift
-
                 pair =
-                    Random.pair (Random.float lowX upperX) (Random.float lowY upperY)
+                    Random.pair (Random.float -minX minX) (Random.float -minY minY)
 
                 ( coords, newSeed2 ) =
                     Random.step pair seed
