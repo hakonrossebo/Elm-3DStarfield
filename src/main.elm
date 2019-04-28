@@ -204,28 +204,28 @@ update msg model =
 
 updateStep : Model -> Float -> ( Model, Cmd Msg )
 updateStep model dt =
-    let
-        ( updatedStars, updatedSeed ) =
-            model.stars
-                |> List.map (moveStar model.zVelocity dt)
-                |> List.filter filterVisibleStars
-                |> addStars False model.seed
+    case model.visibility of
+        Visible ->
+            let
+                ( updatedStars, updatedSeed ) =
+                    model.stars
+                        |> List.map (moveStar model.zVelocity dt)
+                        |> List.filter filterVisibleStars
+                        |> addStars False model.seed
 
-        newModel =
-            case model.visibility of
-                Visible ->
+                newModel =
                     { model
                         | stars = updatedStars
                         , seed = updatedSeed
                         , fps = 1000 / dt |> round
                     }
+            in
+            ( newModel
+            , Cmd.none
+            )
 
-                Hidden ->
-                    model
-    in
-    ( newModel
-    , Cmd.none
-    )
+        Hidden ->
+            ( model, Cmd.none )
 
 
 moveStar : Float -> Float -> Star -> Star
